@@ -97,8 +97,4 @@ if __name__ == "__main__":
         print(sentence)
         triples.append(processSentence(sentence))
 
-    print("################################################################\n")
-    print("Triples:")
-    for triple in triples:
-        print(str(triple))
     printGraph(triples)
