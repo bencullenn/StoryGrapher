@@ -13,46 +13,38 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def getChildren(graph, current, parent=None):
-    print("Current:", current, " Parent:", parent)
+def get_Children(graph, current, parent=None):
     children = []
     for t in current.children:
         # Add each child node that is not punctuation or spacing to the children array
         if t.is_punct is False and t.is_space is False:
             children.append(t)
 
-    print("Children:", children)
     if len(children) == 0:
         if parent is not None:
-            print("Connecting", current, " and ", parent)
             current_label = "\"" + current.text + "\"" + ":" + spacy.explain(current.pos_)
             parent_label = "\"" + parent.text + "\"" + ":" + spacy.explain(parent.pos_)
 
-            """"
-            if spacy.explain(current.dep_) is not None:
-                current_label += ":" + spacy.explain(current.dep_)
-            if spacy.explain(parent.dep_) is not None:
-                parent_label += ":" + spacy.explain(parent.dep_)
-            """
+            if current.dep_ is not None:
+                current_label += ":" + current.dep_
+            if parent.dep_ is not None:
+                parent_label += ":" + parent.dep_
 
             graph.add_edge(current_label, parent_label)
         return graph
     else:
         for child in children:
             if parent is not None:
-                print("Connecting", current, " and ", parent)
                 current_label = "\"" + current.text + "\"" + ":" + spacy.explain(current.pos_)
                 parent_label = "\"" + parent.text + "\"" + ":" + spacy.explain(parent.pos_)
 
-                """"
-                if spacy.explain(current.dep_) is not None:
-                    current_label += ":" + spacy.explain(current.dep_)
-                if spacy.explain(parent.dep_) is not None:
-                    parent_label += ":" + spacy.explain(parent.dep_)
-                """
+                if current.dep_ is not None:
+                    current_label += ":" + current.dep_
+                if parent.dep_ is not None:
+                    parent_label += ":" + parent.dep_
 
                 graph.add_edge(current_label, parent_label)
-            getChildren(graph, child, current)
+            get_Children(graph, child, current)
 
 
 if __name__ == "__main__":
@@ -70,30 +62,29 @@ if __name__ == "__main__":
     with open(text_filepath) as f:
         text = f.read()
 
-    # Create a spacy doc object to store information about the text
+    # Create a Spacy doc object to store information about the text
     doc = nlp(text)
 
     # Get the desired sentence indexes
     for sent in doc.sents:
-        print(sent)
         sentences.append(sent)
 
     np.set_printoptions(threshold=sys.maxsize)
 
-    sliced_sentences = sentences[start_index:end_index + 1]
+    sliced_sentences = sentences[start_index:end_index]
 
-    print("The sentences to be graphed are:")
-    print(sliced_sentences)
+    print("The sentences to be graphed are sentences ", start_index + 1, " to ", end_index)
 
     # Create a graph for each sentence starting with the root and then traversing each of it's children
     for sent in sliced_sentences:
+        print("Creating graph for sentence:", sent)
         G = nx.Graph()
         root = sent.root
-        getChildren(G, root)
+        get_Children(G, root)
 
         # Display the graph using matlibplot
         pos = nx.spring_layout(G)
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(20, 20))
         nx.draw(G, pos, edge_color='black', width=1, linewidths=1,
                 node_size=1000, node_color='seagreen', alpha=0.9,
                 labels={node: node for node in G.nodes()})
