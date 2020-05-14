@@ -8,7 +8,6 @@ and then traversing each of it's children's children.
 import spacy
 import sys
 from spacy.lang.en import English
-import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
@@ -22,8 +21,8 @@ def get_Children(graph, current, parent=None):
 
     if len(children) == 0:
         if parent is not None:
-            current_label = "\"" + current.text + "\"" + ":" + spacy.explain(current.pos_)
-            parent_label = "\"" + parent.text + "\"" + ":" + spacy.explain(parent.pos_)
+            current_label = "\"" + current.text + "\"" + ":" + current.pos_
+            parent_label = "\"" + parent.text + "\"" + ":" + parent.pos_
 
             if current.dep_ is not None:
                 current_label += ":" + current.dep_
@@ -35,8 +34,8 @@ def get_Children(graph, current, parent=None):
     else:
         for child in children:
             if parent is not None:
-                current_label = "\"" + current.text + "\"" + ":" + spacy.explain(current.pos_)
-                parent_label = "\"" + parent.text + "\"" + ":" + spacy.explain(parent.pos_)
+                current_label = "\"" + current.text + "\"" + ":" + current.pos_
+                parent_label = "\"" + parent.text + "\"" + ":" + parent.pos_
 
                 if current.dep_ is not None:
                     current_label += ":" + current.dep_
@@ -49,7 +48,7 @@ def get_Children(graph, current, parent=None):
 
 if __name__ == "__main__":
     start_index = 0
-    end_index = 5
+    end_index = 20
     text_filepath = "Ghost_Chimes.txt"
     sentences = []
 
@@ -69,9 +68,7 @@ if __name__ == "__main__":
     for sent in doc.sents:
         sentences.append(sent)
 
-    np.set_printoptions(threshold=sys.maxsize)
-
-    sliced_sentences = sentences[start_index:end_index]
+    sliced_sentences = sentences[start_index:end_index + 1]
 
     print("The sentences to be graphed are sentences ", start_index + 1, " to ", end_index)
 
