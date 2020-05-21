@@ -47,9 +47,10 @@ def get_Children(graph, current, parent=None):
 
 
 if __name__ == "__main__":
+    # Add your filepath here
+    text_filepath = ""
     start_index = 0
     end_index = 20
-    text_filepath = "text_data/Ghost_Chimes.txt"
     sentences = []
 
     # Create a Spacy object and the sentencizer to the pipeline

@@ -10,7 +10,8 @@ import pandas as pd
 
 if __name__ == "__main__":
 
-    text_filepath = "text_data/Ghost_Chimes.txt"
+    # Add your filepath here
+    text_filepath = ""
 
     # Create a Spacy object and the sentencizer to the pipeline
     nlp = English()

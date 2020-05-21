@@ -80,7 +80,8 @@ def printGraph(triples):
 
 if __name__ == "__main__":
 
-    text_filepath = "text_data/Ghost_Chimes.txt"
+    # Add your filepath here
+    text_filepath = ""
 
     # Open up the story file and use the read function to convert the text to a string
     with open(text_filepath) as f:
