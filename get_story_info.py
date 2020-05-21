@@ -10,13 +10,15 @@ import pandas as pd
 
 if __name__ == "__main__":
 
+    text_filepath = "text_data/Ghost_Chimes.txt"
+
     # Create a Spacy object and the sentencizer to the pipeline
     nlp = English()
     nlp = spacy.load('en_core_web_sm')
     nlp.add_pipe(nlp.create_pipe('sentencizer'))
 
     # Open the file for the text that we want to read
-    with open("Ghost_Chimes.txt") as f:
+    with open(text_filepath) as f:
         text = f.read()
 
     # Create a spacy doc object to store information about the text
