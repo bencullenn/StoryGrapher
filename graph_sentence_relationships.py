@@ -3,6 +3,7 @@ Created by Ben Cullen on May 13th 2020
 
 This script will create graphs of a sentence's structure starting with the root word
 and then traversing each of it's children's children.
+This can be used to view the relationship between parts of a sentence.
 '''
 
 import spacy
@@ -12,7 +13,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-def get_Children(graph, current, parent=None):
+def get_children(graph, current, parent=None):
     children = []
     for t in current.children:
         # Add each child node that is not punctuation or spacing to the children array
@@ -43,7 +44,7 @@ def get_Children(graph, current, parent=None):
                     parent_label += ":" + parent.dep_
 
                 graph.add_edge(current_label, parent_label)
-            get_Children(graph, child, current)
+            get_children(graph, child, current)
 
 
 if __name__ == "__main__":
@@ -78,7 +79,7 @@ if __name__ == "__main__":
         print("Creating graph for sentence:", sent)
         G = nx.Graph()
         root = sent.root
-        get_Children(G, root)
+        get_children(G, root)
 
         # Display the graph using matlibplot
         pos = nx.spring_layout(G)

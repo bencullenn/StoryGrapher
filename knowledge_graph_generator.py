@@ -1,6 +1,8 @@
 
 """
 Created by Ben Cullen on May 13th 2020
+
+This script will create a knowledge graph from a text file of a story
 """
 
 import spacy
@@ -8,7 +10,7 @@ from spacy.lang.en import English
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def getSentences(text):
+def get_sentences(text):
     # Create a Spacy object called npl
     nlp = spacy.load('en_core_web_sm')
     # Add a pipeline object to it that will split up sentences and create a Spacy document object
@@ -61,7 +63,7 @@ def create_triple(sent):
         print("Could not create a meaningful triple for this sentence")
 
 
-def printGraph(triples):
+def print_graph(triples):
     G = nx.Graph()
     for triple in triples:
         print('Graphing triple:', triple)
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     with open(text_filepath) as f:
         text = f.read()
 
-    sentences = getSentences(text)
+    sentences = get_sentences(text)
     triples = []
 
     for sent in sentences:
@@ -95,6 +97,6 @@ if __name__ == "__main__":
         if triple is not None:
             triples.append(create_triple(sent))
 
-    printGraph(triples)
-    printGraph(triples)
-    printGraph(triples)
+    print_graph(triples)
+    print_graph(triples)
+    print_graph(triples)
