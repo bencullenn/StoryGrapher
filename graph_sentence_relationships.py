@@ -83,9 +83,9 @@ if __name__ == "__main__":
 
         # Display the graph using matlibplot
         pos = nx.spring_layout(G)
-        plt.figure(figsize=(20, 20))
+        fig = plt.figure(figsize=(20, 20))
+        fig.suptitle('Sentence Text: ' + str(sent))
         nx.draw(G, pos, edge_color='black', width=1, linewidths=1,
                 node_size=1000, node_color='seagreen', alpha=0.9,
                 labels={node: node for node in G.nodes()})
-        plt.axis('off')
         plt.show()
