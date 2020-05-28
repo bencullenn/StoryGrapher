@@ -49,7 +49,7 @@ def get_children(graph, current, parent=None):
 
 if __name__ == "__main__":
     # Add your filepath here
-    text_filepath = ""
+    text_filepath = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
     start_index = 0
     end_index = 20
     sentences = []
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         G = nx.Graph()
         root = sent.root
         get_children(G, root)
-
+            
         # Display the graph using matlibplot
         pos = nx.spring_layout(G)
         fig = plt.figure(figsize=(20, 20))

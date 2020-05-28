@@ -98,5 +98,3 @@ if __name__ == "__main__":
             triples.append(create_triple(sent))
 
     print_graph(triples)
-    print_graph(triples)
-    print_graph(triples)
