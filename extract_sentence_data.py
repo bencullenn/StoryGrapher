@@ -5,14 +5,12 @@ This script processes text data using stanford's OpenIE project to extract meani
 """
 
 import pandas as pd
+import random
 import spacy
 from spacy.lang.en import English
 from openie import StanfordOpenIE
 
-
-def get_random_sentences(data_path):
-    start_index = 0
-    end_index = 20
+def get_all_sentences(data_path):
     sentences = []
 
     # Create a Spacy object and the sentencizer to the pipeline
@@ -31,18 +29,31 @@ def get_random_sentences(data_path):
     for sent in doc.sents:
         sentences.append(sent)
 
-    sliced_sentences = sentences[start_index:end_index + 1]
+    return sentences
+
+
+def get_random_sentences(data_path, num_of_sent=5):
+
+    sliced_sentences = random.choices(get_all_sentences(data_path), k=num_of_sent)
 
     return sliced_sentences
 
 def main():
-    data_path = ""
+    # Put data path here
+    data_path = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
+    sentences = []
+    triples = []
 
     with StanfordOpenIE() as client:
         for sent in get_random_sentences(data_path):
             print('Processing sentence:', sent.text)
-            for triple in client.annotate(sent.text):
-                print(triple)
+            sentences.append(sent.text)
+            triples.append(client.annotate(sent.text))
+
+    # Put sentence and triple data into a pandas dataframe
+    triples_data = pd.DataFrame({'Sentences': sentences, 'Triples': triples})
+
+    print(triples_data)
 
 
 
