@@ -11,6 +11,7 @@ import sys
 from spacy.lang.en import English
 import networkx as nx
 import matplotlib.pyplot as plt
+import os
 
 
 def get_children(graph, current, parent=None):
@@ -79,10 +80,13 @@ def get_sliced_sentences(data_path, start_index, end_index):
 if __name__ == "__main__":
     # Add your filepath here
     text_filepath = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
+    save_dest = "/Users/bencullen/Projects/StoryGrapher/output/sentence_graphs"
 
     sentences = get_all_sentences(text_filepath)
 
     # Create a graph for each sentence starting with the root and then traversing each of it's children
+    sent_index = 0
+    data_name = text_filepath.split('/')[-1]
     for sent in sentences:
         print("Creating graph for sentence:", sent)
         G = nx.Graph()
@@ -96,4 +100,7 @@ if __name__ == "__main__":
         nx.draw(G, pos, edge_color='black', width=1, linewidths=1,
                 node_size=1000, node_color='seagreen', alpha=0.9,
                 labels={node: node for node in G.nodes()})
-        plt.show()
+
+        plt.savefig(os.path.join('output/sentence_graphs/' + data_name + '_sentence_' + str(sent_index) + '_graph.png'))
+
+        sent_index += 1
