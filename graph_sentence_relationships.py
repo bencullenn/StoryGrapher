@@ -46,12 +46,7 @@ def get_children(graph, current, parent=None):
                 graph.add_edge(current_label, parent_label)
             get_children(graph, child, current)
 
-
-if __name__ == "__main__":
-    # Add your filepath here
-    text_filepath = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
-    start_index = 0
-    end_index = 20
+def get_all_sentences(data_path):
     sentences = []
 
     # Create a Spacy object and the sentencizer to the pipeline
@@ -60,7 +55,7 @@ if __name__ == "__main__":
     nlp.add_pipe(nlp.create_pipe('sentencizer'))
 
     # Open the file for the text that we want to read
-    with open(text_filepath) as f:
+    with open(data_path) as f:
         text = f.read()
 
     # Create a Spacy doc object to store information about the text
@@ -70,12 +65,25 @@ if __name__ == "__main__":
     for sent in doc.sents:
         sentences.append(sent)
 
+    return sentences
+
+def get_sliced_sentences(data_path, start_index, end_index):
+    sentences = get_all_sentences(data_path)
+
     sliced_sentences = sentences[start_index:end_index + 1]
 
-    print("The sentences to be graphed are sentences ", start_index + 1, " to ", end_index)
+    print("Sentences sliced from ", start_index + 1, " to ", end_index)
+
+    return  sliced_sentences
+
+if __name__ == "__main__":
+    # Add your filepath here
+    text_filepath = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
+
+    sentences = get_all_sentences(text_filepath)
 
     # Create a graph for each sentence starting with the root and then traversing each of it's children
-    for sent in sliced_sentences:
+    for sent in sentences:
         print("Creating graph for sentence:", sent)
         G = nx.Graph()
         root = sent.root
