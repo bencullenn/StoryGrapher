@@ -45,7 +45,7 @@ def main():
     triples = []
 
     with StanfordOpenIE() as client:
-        for sent in get_random_sentences(data_path):
+        for sent in get_all_sentences(data_path):
             print('Processing sentence:', sent.text)
             sentences.append(sent.text)
             triples.append(client.annotate(sent.text))
@@ -53,6 +53,8 @@ def main():
     # Put sentence and triple data into a pandas dataframe
     triples_data = pd.DataFrame({'Sentences': sentences, 'Triples': triples})
 
+    # Store the dataframe into a csv file for better reading
+    triples_data.to_csv(r'/Users/bencullen/Projects/StoryGrapher/output/triples_data.csv')
     print(triples_data)
 
 
