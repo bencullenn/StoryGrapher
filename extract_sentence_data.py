@@ -13,7 +13,6 @@ import json
 import re
 from spacy.lang.en import English
 from allennlp.predictors.predictor import Predictor
-import allennlp_models.structured_prediction
 
 
 def get_all_sentences(data_path):
@@ -88,45 +87,82 @@ def create_stanfordNLP_triple(sent, npl_client):
     return triples
 
 
-def create_allennlp_triple(sent):
+def create_openie_triple(sent):
     predictor = Predictor.from_path(
         "https://storage.googleapis.com/allennlp-public-models/openie-model.2020.03.26.tar.gz")
     result = (predictor.predict(
         sentence=sent
     ))
-    print("Allen NLP Result:", result)
+    print("OpenIE Result:", result)
 
     return result
 
+def create_srl_triple(sent):
+    predictor = Predictor.from_path(
+        "https://storage.googleapis.com/allennlp-public-models/bert-base-srl-2020.03.24.tar.gz")
+    result = (predictor.predict(
+        sentence=sent
+    ))
+    print("SRL Result:", result)
+
+    return result
 
 def main():
     # Put data path here
-    data_path = "/Users/bencullen/Projects/StoryGrapher/text_data/fading_light_of_sundown.txt"
+    data_path = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
     save_path = "/Users/bencullen/Projects/StoryGrapher/output/triples/"
     data_name = data_path.split('/')[-1]
     sentences = []
-    allennlp_triples = []
+    openie_triples = []
+    openie_raw_json = []
+    srl_triples = []
+    srl_raw_json = []
     t = time.localtime()
     timestamp = time.strftime('%b-%d-%y_%H:%M', t)
+
     all_sentences = get_all_sentences(data_path)
     for sent in all_sentences:
         print('Processing sentence:', sent.text)
         sentences.append(sent)
-        allennlp_dict = create_allennlp_triple(sent.text)['verbs']
 
-        triples_list = []
-        for item in allennlp_dict:
+        # Extract a triple using OpenIE
+        openie_result = create_openie_triple(sent.text)
+        openie_dict = openie_result['verbs']
+
+        openie_list = []
+        for item in openie_dict:
             extraction = item["description"]
             word_list = re.findall(r"\[.*?\]", extraction)
             word_str = "{" + ",".join(word_list) + "}"
-            triples_list.append(word_str)
+            openie_list.append(word_str)
 
-        triples_str = ",".join(triples_list)
-        print("Extracted triples:", triples_str + '\n')
-        allennlp_triples.append(triples_str)
+        openie_str = ",".join(openie_list)
+        print("Openie triples:", openie_str + '\n')
+        openie_triples.append(openie_str)
+        openie_raw_json.append(openie_result)
+
+        # Extract a triple using Semantic Role Labeling
+        srl_result = create_srl_triple(sent.text)
+        srl_dict = srl_result['verbs']
+
+        srl_list = []
+        for item in srl_dict:
+            extraction = item["description"]
+            word_list = re.findall(r"\[.*?\]", extraction)
+            word_str = "{" + ",".join(word_list) + "}"
+            srl_list.append(word_str)
+
+        srl_str = ",".join(srl_list)
+        print("SRL triples:", srl_str + '\n')
+        srl_triples.append(srl_str)
+        srl_raw_json.append(srl_result)
 
     # Put sentence and triple data into a pandas dataframe
-    triples_data = pd.DataFrame({'Sentences': sentences, 'Allen NLP Triples': allennlp_triples})
+    triples_data = pd.DataFrame({'Sentences': sentences,
+                                 'Open IE Triples': openie_triples,
+                                 'Open IE JSON': openie_raw_json,
+                                 'SRL Triples': srl_triples,
+                                 'SRL JSON': srl_raw_json})
 
     # Store the DataFrame into a csv file for better reading
     triples_data.to_csv(os.path.join(save_path + data_name + '_triples_ ' + timestamp + '.csv'))
