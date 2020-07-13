@@ -7,11 +7,12 @@ This can be used to view the relationship between parts of a sentence.
 '''
 
 import spacy
-import sys
 from spacy.lang.en import English
 import networkx as nx
 import matplotlib.pyplot as plt
 import os
+import re
+import time
 
 
 def get_children(graph, current, parent=None):
@@ -47,6 +48,7 @@ def get_children(graph, current, parent=None):
                 graph.add_edge(current_label, parent_label)
             get_children(graph, child, current)
 
+
 def get_all_sentences(data_path):
     sentences = []
 
@@ -64,7 +66,9 @@ def get_all_sentences(data_path):
 
     # Get the desired sentence indexes
     for sent in doc.sents:
-        sentences.append(sent)
+        # Make sure sentences contain graphable text
+        if re.search("[a-zA-Z]", sent.text) != None:
+            sentences.append(sent)
 
     return sentences
 
@@ -78,15 +82,21 @@ def get_sliced_sentences(data_path, start_index, end_index):
     return  sliced_sentences
 
 if __name__ == "__main__":
-    # Add your filepath here
-    text_filepath = "/Users/bencullen/Projects/StoryGrapher/text_data/Ghost_Chimes.txt"
-    save_dest = "/Users/bencullen/Projects/StoryGrapher/output/sentence_graphs"
 
-    sentences = get_all_sentences(text_filepath)
+    # Add path for the data here
+    data_path = ""
+    save_path = ""
+
+    # Use this code to graph all sentence in document.
+    # Also can be changed to use get_sliced_sentence to graph specific sentences.
+    sentences = get_all_sentences(data_path)
 
     # Create a graph for each sentence starting with the root and then traversing each of it's children
     sent_index = 0
-    data_name = text_filepath.split('/')[-1]
+    data_name = data_path.split('/')[-1]
+    t = time.localtime()
+    timestamp = time.strftime('%b-%d-%y_%H:%M', t)
+
     for sent in sentences:
         print("Creating graph for sentence:", sent)
         G = nx.Graph()
@@ -101,6 +111,6 @@ if __name__ == "__main__":
                 node_size=1000, node_color='seagreen', alpha=0.9,
                 labels={node: node for node in G.nodes()})
 
-        plt.savefig(os.path.join('output/sentence_graphs/' + data_name + '_sentence_' + str(sent_index) + '_graph.png'))
+        plt.savefig(os.path.join(save_path + data_name + '_sentence_' + str(sent_index) + '_graph_'+timestamp+'.png'))
 
         sent_index += 1
