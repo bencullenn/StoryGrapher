@@ -1,6 +1,6 @@
 # Coreference Resolution Script
 
-#%%
+#%% Imports
 from allennlp.predictors.predictor import Predictor
 import torch
 from time import time
@@ -9,7 +9,7 @@ from time import time
 #%% Setup
 path_in = "data/non_resolved/Ghost_Chimes.txt"
 path_out = "data/resolved/resolved_ghost_chimes.txt"
-ignore = {"her", "your", "their", "they", "his", "he", "she", "it", "its", "you", "we", "our", "us", "that", "this", "there", "where", "then", "when", "who", "what", "them"} # how why because
+ignore = {"the", "a", "an", "another", "her", "your", "their", "they", "his", "he", "she", "it", "its", "you", "we", "our", "us", "that", "this", "there", "where", "then", "when", "who", "what", "them"} # how why because
 used_refs = set()
 
 def get_coref_prediction(predictor, text):
@@ -29,7 +29,7 @@ def get_name(cluster, document):
             tokens.append(document[i])
     name = None
     for t in tokens:
-        if t not in ignore:
+        if t and t.lower() not in ignore:
             name = t
             break
     if name is None:
