@@ -6,6 +6,8 @@ import torch
 from time import time
 
 
+# NOTE/ TODO: we're losing some data with belonging and and's with current replacement scheme.
+
 #%% Setup
 path_in = "data/non_resolved/Ghost_Chimes.txt"
 path_out = "data/resolved/resolved_ghost_chimes.txt"
