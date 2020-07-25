@@ -7,6 +7,7 @@ from time import time
 from sys import argv
 from os import listdir
 from os.path import isfile, join
+import allennlp_models.coref
 
 """ SCRIPT USAGE:
     ALWAYS outputs to data/resolved!
