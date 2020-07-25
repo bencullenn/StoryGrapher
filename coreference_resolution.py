@@ -64,7 +64,7 @@ coref_predictor = Predictor.from_path(coref_model_url, cuda_device=torch.cuda.cu
 
 #%%
 for p in paths:
-    with open(p) as f:
+    with open(path_in + p) as f:
         text = f.read()
 
     result = get_coref_prediction(coref_predictor, text)
