@@ -13,7 +13,6 @@ import allennlp_models.coref
     ALWAYS outputs to data/resolved!
     No argument: automatically runs through all files in data/non_resolved.
     Filename as argument: only runs for the given file found in data/non_resolved.
-    Path as argument: specify path; can be folder or file.
 """
 
 # NOTE/ TODO: we're losing some data with belonging and and's with current replacement scheme.
@@ -21,12 +20,11 @@ import allennlp_models.coref
 #%% Setup
 path_in = "data/non_resolved/"
 if __name__ == "__main__" and len(argv) > 1:
-    if "/" in argv[1]: path_in = argv[1]
-    else: path_in += argv[1]
-paths = [path_in] if isfile(path_in) else [f for f in listdir(path_in) if isfile(join(path_in, f))]
+    paths = [argv[1]]
+else: paths = [f for f in listdir(path_in) if isfile(join(path_in, f))]
 path_out = "data/resolved/resolved_"
 
-ignore = {"the", "a", "an", "another", "her", "your", "their", "they", "his", "he", "she", "it", "its", "you", "we", "our", "us", "that", "this", "there", "where", "then", "when", "who", "what", "them"} # how why because
+ignore = {"my", "the", "a", "an", "another", "her", "your", "their", "they", "his", "he", "she", "it", "its", "you", "we", "our", "us", "that", "this", "there", "where", "then", "when", "who", "what", "them"} # how why because
 used_refs = set()
 
 def get_coref_prediction(predictor, text):
@@ -63,6 +61,7 @@ coref_model_url = "https://storage.googleapis.com/allennlp-public-models/coref-s
 coref_predictor = Predictor.from_path(coref_model_url, cuda_device=torch.cuda.current_device())
 
 #%%
+print("PATHS DEBUG:", paths)
 for p in paths:
     with open(path_in + p) as f:
         text = f.read()
@@ -81,5 +80,5 @@ for p in paths:
     result = filter(lambda s: s is not None, result)
     result = ' '.join(result)
 
-    with open(path_out + p) as f:
+    with open(path_out + p, "w+") as f:
         f.write(result)
