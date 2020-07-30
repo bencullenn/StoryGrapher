@@ -1,4 +1,10 @@
 # Coreference Resolution Script
+""" SCRIPT USAGE:
+    ALWAYS outputs to data/resolved!
+    No argument: automatically runs through all files in data/non_resolved.
+    Filename as argument: only runs for the given file found in data/non_resolved.
+    Path as argument: specify path; can be folder or file.
+"""
 
 #%% Imports
 from allennlp.predictors.predictor import Predictor
@@ -9,12 +15,13 @@ from os import listdir
 from os.path import isfile, join
 import allennlp_models.coref
 
-""" SCRIPT USAGE:
-    ALWAYS outputs to data/resolved!
-    No argument: automatically runs through all files in data/non_resolved.
-    Filename as argument: only runs for the given file found in data/non_resolved.
-    Path as argument: specify path; can be folder or file.
-"""
+IGNORE = {
+    "a", "an", "the", "that", "this", "another",
+    "her",  "him", "she", "he", "it",  "we",  "us",   "you",           "they",  "them",
+    "hers", "his",              "its", "our", "ours", "your", "yours", "their", "theirs",
+    "where", "there", "when", "then", "who", "what", "whose",
+} # how why because
+
 
 # NOTE/ TODO: we're losing some data with belonging and and's with current replacement scheme.
 
@@ -25,8 +32,6 @@ if __name__ == "__main__" and len(argv) > 1:
     else: path_in += argv[1]
 paths = [path_in] if isfile(path_in) else [f for f in listdir(path_in) if isfile(join(path_in, f))]
 path_out = "data/resolved/resolved_"
-
-ignore = {"the", "a", "an", "another", "her", "your", "their", "they", "his", "he", "she", "it", "its", "you", "we", "our", "us", "that", "this", "there", "where", "then", "when", "who", "what", "them"} # how why because
 used_refs = set()
 
 def get_coref_prediction(predictor, text):
@@ -73,7 +78,6 @@ for p in paths:
     # print(f"Coref Clusters: {clusters}")
 
     for j, c in enumerate(clusters):
-        ref = result[c[0][0]] # Name # TODO: make this unique by checking if in set
         for span in c:
             for m in range(span[0], span[1]+1):
                 result[m] = None
