@@ -236,8 +236,8 @@ def main():
         device = torch.cuda.current_device()
 
     # Put data path here
-    data_path = "/Users/bencullen/Projects/StoryGrapher/text_data/test.txt"
-    save_path = "/Users/bencullen/Projects/StoryGrapher/output/triples/"
+    data_path = "data/resolved/resolved_anne_bonny.txt"
+    save_path = "data/triples/"
     data_name = data_path.split('/')[-1]
 
     # Generate Models
@@ -254,13 +254,6 @@ def main():
     print("Finished generating models")
 
     sentences = []
-    all_triples = []
-    openie_raw_json = []
-    sent_parts_of_speech = []
-    sent_structure = []
-    sent_roots = []
-    selected_triples = []
-    verb_tenses = []
     trimmed_triples = []
 
     # Split text data into sentences
@@ -279,60 +272,35 @@ def main():
     for sent in all_sentences:
         print('Processing sentence:', sent.text)
         sentences.append(sent)
-
-        sent_pos = get_sent_pos_string(sent)
-        print(sent_pos)
-        sent_parts_of_speech.append(sent_pos)
-
-        sent_dep = get_sent_dep(sent)
-        print(sent_dep)
-        sent_structure.append(sent_dep)
-
+        
+        # Get the root of the sentence
         sent_root = get_root_verb(sent)
         # print("Root Verb:", sent_root)
-        sent_roots.append(sent_root)
 
         # Extract a triple using OpenIE
         openie_result = create_openie_triple(openie_predictor, sent.text.strip())
-        openie_raw_json.append(openie_result)
 
-        openie_str = get_triple_string_from_json(openie_result)
-        all_triples.append(openie_str)
-        # print("Openie triples:", openie_str)
-
+        # Get releveant triple
         relevant_triple = get_relevant_triple(openie_result, sent_root)
-        selected_triples.append(relevant_triple)
         # print("Selected Triple", str(relevant_triple))
 
-        verb_tense = get_verb_tense(sent, relevant_triple)
-        # print("Triple's Tense:", verb_tense)
-        verb_tenses.append(verb_tense)
-
-        trimmed = trim_triple(spacy_sent, relevant_triple)
-        # print("Trimmed Triple:", trimmed, "\n")
+        # Tri the triple
+        trimmed = trim_triple(spacy_sent, relevant_triple) 
         trimmed_triples.append(trimmed)
-        print("\n")
+        print("Trimmed Triple:", trimmed, "\n")
 
         if remove_bad_triples == True:
             if None in trimmed:
-                sentences.pop()
-                sent_parts_of_speech.pop()
-                sent_structure.pop()
-                sent_roots.pop()
-                openie_raw_json.pop()
-                all_triples.pop()
-                selected_triples.pop()
-                verb_tenses.pop()
+                sentences.pop()  
                 trimmed_triples.pop()
             else:
                 good_triples += 1
 
     # Put sentence and triple data into a pandas dataframe for exporting
-    triples_data = pd.DataFrame({'Sentences': sentences,
-                                 'Trimmed Triple': trimmed_triples
-                                 })
+    triples_data = pd.DataFrame({'Sentence': sentences,
+                                 'Trimmed Triple': trimmed_triples})
 
-    print(good_triples, " triples of total triples ", total_triples, " were extracted")
+    print(good_triples, " triples of total ", total_triples, " triples were extracted")
 
     # Store the DataFrame into a csv file for examination
     triples_data.to_csv(os.path.join(save_path + data_name + '_triples_ ' + timestamp + '.csv'))
