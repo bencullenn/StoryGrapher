@@ -63,46 +63,43 @@ def get_name(cluster, document):
     used_refs.add(name + str(k))
     return name + str(k)
 
-def chunkText(text):
-    spacy_sent = spacy.load('en_core_web_sm')
-    spacy_sent.add_pipe(spacy_sent.create_pipe('sentencizer'))
-    print("Generated Spacy")
-
-    doc = spacy_sent(text)
+def chunkText(doc):
     sentences = []
     chunks = []
-    sent_num = 0
-    max_sent_per_chunk = 250
+    text_size = 0
+    max_size_per_chunk = 10000
     
     for sent in doc.sents:
         sentences.append(sent)
-        sent_num += 1
+        text_size += len(sent.text.encode('utf-8'))
     
-    chunk_num = math.ceil(sent_num/max_sent_per_chunk)
-    chunk_size = math.ceil(sent_num/chunk_num)
-    print(sent_num, " sentences were extracted. Splitting into ", chunk_num, " chunks of ", chunk_size, " sentences each.") 
+    chunk_num = math.ceil(text_size/max_size_per_chunk)
+    print("The length of text was ", text_size,  ". Splitting into ", chunk_num, " chunks of max length ", max_size_per_chunk) 
     
-    slice_index = 0
+    index = 0
     for i in range(chunk_num):
         chunk = []
-        
-        if slice_index + chunk_size < len(sentences):
-            chunk = sentences[slice_index:slice_index + chunk_size]
-            slice_index += chunk_size
-        else:
-            chunk = sentences[slice_index:-1]
-
         text = ""
-        for sent in chunk:
-            text += sent.text
-        
-        chunks.append(text)
+        chunk_size = 0
+
+        while chunk_size <= max_size_per_chunk and index < len(sentences):
+            sent = sentences[index].text
+            print("Chunk Size ", chunk_size, " Sent Size ", len(sent.encode('utf-8')), "Max Size ", max_size_per_chunk)
+            if chunk_size + len(sent.encode('utf-8')) <= max_size_per_chunk:
+                print("Adding sent to chunk")
+                text += sent
+                chunk_size += len(sent.encode('utf-8'))
+                index += 1
+            else:
+                print("Max size for chunk met. Current chunk size is ", len(text.encode('utf-8')))
+                chunks.append(text)
+                break
 
     print("Quality Check")
     
     chunk_index = 1
     for chunk in chunks:
-        print("Chunk #", chunk_index, " has an length of ", len(chunk))
+        print("Chunk #", chunk_index, " has an length of ", len(chunk), " and size ", len(chunk.encode('utf-8')))
 
     return chunks   
 
@@ -110,8 +107,13 @@ def chunkText(text):
 #%% Initialization
 print("Cuda enabled:", torch.cuda.current_device() == 0)
 print("Loading models...")
+print("Generating Coreference Model...")
 coref_model_url = "https://storage.googleapis.com/allennlp-public-models/coref-spanbert-large-2020.02.27.tar.gz"
 coref_predictor = Predictor.from_path(coref_model_url, cuda_device=torch.cuda.current_device())
+
+print("Generating Spacy...")
+spacy_sent = spacy.load('en_core_web_sm')
+spacy_sent.add_pipe(spacy_sent.create_pipe('sentencizer'))
 
 #%%
 print("PATHS DEBUG:", paths)
@@ -119,7 +121,8 @@ for p in paths:
     with open(path_in + p) as f:
         text = f.read()
     
-    chunks = chunkText(text)
+    doc = spacy_sent(text)
+    chunks = chunkText(doc)
     total_result = ""
     results = []
     for chunk in chunks:
