@@ -64,6 +64,7 @@ def get_name(cluster, document):
     return name + str(k)
 
 def chunkText(doc):
+    print("Chunking Text...")
     sentences = []
     chunks = []
     text_size = 0
@@ -78,29 +79,40 @@ def chunkText(doc):
     
     index = 0
     for i in range(chunk_num):
+        print("Processing chunk ", i+1)
         chunk = []
         text = ""
         chunk_size = 0
 
-        while chunk_size <= max_size_per_chunk and index < len(sentences):
-            sent = sentences[index].text
-            print("Chunk Size ", chunk_size, " Sent Size ", len(sent.encode('utf-8')), "Max Size ", max_size_per_chunk)
-            if chunk_size + len(sent.encode('utf-8')) <= max_size_per_chunk:
-                print("Adding sent to chunk")
+        while chunk_size <= max_size_per_chunk: 
+            # Make sure index is in bounds
+            if index >= len(sentences):
+                #print("End of sentence array reached. Current chunk size is ", len(text.encode('utf-8')))
+                chunks.append(text)
+                break
+            else:
+                sent = sentences[index].text
+            
+            #print("Chunk Size ", chunk_size, " Sent Size ", len(sent.encode('utf-8')), "Index ", index, "Array Length ", len(sentences))
+            
+            # Make sure the chunk is below the max size
+            if chunk_size + len(sent.encode('utf-8')) >= max_size_per_chunk: 
+                #print("Max chunk size reached. Current chunk size is ", len(text.encode('utf-8')))
+                chunks.append(text)
+                break
+            else:
+                #print("Adding sent to chunk")
                 text += sent
                 chunk_size += len(sent.encode('utf-8'))
                 index += 1
-            else:
-                print("Max size for chunk met. Current chunk size is ", len(text.encode('utf-8')))
-                chunks.append(text)
-                break
 
     print("Quality Check")
     
     chunk_index = 1
     for chunk in chunks:
-        print("Chunk #", chunk_index, " has an length of ", len(chunk), " and size ", len(chunk.encode('utf-8')))
-
+        print("Chunk #", chunk_index, "of ", len(chunks), " has an length of ", len(chunk), " and size ", len(chunk.encode('utf-8')))
+        chunk_index += 1
+    
     return chunks   
 
 
@@ -118,6 +130,7 @@ spacy_sent.add_pipe(spacy_sent.create_pipe('sentencizer'))
 #%%
 print("PATHS DEBUG:", paths)
 for p in paths:
+    print("Processing file ", p)
     with open(path_in + p) as f:
         text = f.read()
     
@@ -125,7 +138,11 @@ for p in paths:
     chunks = chunkText(doc)
     total_result = ""
     results = []
+    chunkIndex = 1
     for chunk in chunks:
+        print("Generating result for chunk ", chunkIndex, " of ", len(chunks))
+        chunkIndex += 1
+
         result = get_coref_prediction(coref_predictor, chunk)
         clusters, result = result['clusters'], result['document'].copy()
         refs = [get_name(c, result) for c in clusters]
@@ -142,4 +159,6 @@ for p in paths:
         
     total_result = total_result.join(results)
     with open(path_out + p, "w+") as f:
-        f.write(total_result)   
+        f.write(total_result)
+
+    print("\n")
