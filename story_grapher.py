@@ -236,7 +236,7 @@ def main():
         device = torch.cuda.current_device()
 
     # Put data path here
-    data_path = "data/resolved/resolved_anne_bonny.txt"
+    data_path = "data/raw/anne_bonnie.txt"
     save_path = "data/triples/"
     data_name = data_path.split('/')[-1]
 
