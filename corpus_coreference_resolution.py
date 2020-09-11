@@ -1,8 +1,8 @@
 # Coreference Resolution Script
 """ SCRIPT USAGE:
     ALWAYS outputs to data/resolved!
-    No argument: automatically runs through all files in data/non_resolved.
-    Filename as argument: only runs for the given file found in data/non_resolved.
+    This script is specifically designed to be used with the a corpus which each line is a new sentence. 
+    For text data that is not formatted like this use the other corefernece resolution script 
 """
 
 # NOTE/ TODO: we're losing some data with belonging and and's with current replacement scheme.
@@ -18,6 +18,7 @@ from os.path import isfile, join
 import allennlp_models.coref
 import spacy
 import math
+import re
 
 IGNORE = {
     "a", "an", "the", "that", "this", "another",
@@ -26,9 +27,10 @@ IGNORE = {
     "where", "there", "when", "then", "who", "what", "whose",
 } # how why because
 
+# Keywords that would indicate line is a title so we know to exclude them
+TITLE_INDICATORS = { "copyright", "isbn" }
 
-
-#%% Setup
+#% Setup
 # Load and save loction for test stories
 """
 path_in = "data/non_resolved/"
@@ -128,19 +130,103 @@ def chunkText(doc):
 print("Cuda enabled:", torch.cuda.current_device() == 0)
 print("Loading models...")
 print("Generating Coreference Model...")
-#coref_model_url = "https://storage.googleapis.com/allennlp-public-models/coref-spanbert-large-2020.02.27.tar.gz"
-#coref_predictor = Predictor.from_path(coref_model_url, cuda_device=torch.cuda.current_device())
+coref_model_url = "https://storage.googleapis.com/allennlp-public-models/coref-spanbert-large-2020.02.27.tar.gz"
+coref_predictor = Predictor.from_path(coref_model_url, cuda_device=torch.cuda.current_device())
 
+"""
 print("Generating Spacy...")
 spacy_sent = spacy.load('en_core_web_sm')
 spacy_sent.add_pipe(spacy_sent.create_pipe('sentencizer'))
+"""
 
 #%%
 print("PATHS DEBUG:", paths)
 for p in paths:
     print("Processing file ", p)
     print(f"File Size: {stat(path_in + p).st_size / (1024 * 1024 * 1024)} GB")
+    
+
+    """
+    line_count = 0
+
+    for line in open(path_in + p):
+        line_count += 1
+        print("Line:", line_count)
+
+    print("Line count:", line_count)
+
     exit()
+    """
+
+    # Iterate through each line of the file
+    # Check that max text size is not exceeded
+    # Continue until max text size is reached
+    # Run all sentences through spacy as a doc and process for coreference resoltyion 
+
+    
+    file = open(path_in +p, "r")
+    line_index = 1
+    #line_count = len(lines)
+    chunk_text = ""
+    max_chunk_size = 10000
+    chunk_size = 0
+    #placeholder_line = "\n***************************************************************\n"
+    
+    for line in file:
+        print("Line ", line_index, ":", line)
+
+        sentence_size = len(line.encode('utf-8'))
+
+        if chunk_size + sentence_size < max_chunk_size:
+            if any(([True if indicator in line else False for indicator in TITLE_INDICATORS])):
+                print("Line was not added to chunk because it is likely a title or non-story text")
+                #print("Inserting placeholder text")
+                #chunk_size += len(placeholder_line.encode('utf-8'))
+                #chunk_text += placeholder_line
+            else:
+                print("Chunk Size: ", chunk_size, " is less than max size of ", max_chunk_size)
+                print("Adding sentence to chunk")
+                chunk_text += line
+                chunk_size += sentence_size
+        else:
+            print("Chunk max size reached")
+
+            print("Creating prediction")
+            results = []
+            total_result = ""
+            result = get_coref_prediction(coref_predictor, chunk_text)
+            clusters, result = result['clusters'], result['document'].copy()
+            refs = [get_name(c, result) for c in clusters]
+            # print(f"Coref Clusters: {clusters}")
+
+            for j, c in enumerate(clusters):
+                for span in c:
+                    for m in range(span[0], span[1]+1):
+                        result[m] = None
+                    result[span[0]] = refs[j]
+            result = filter(lambda s: s is not None, result)
+            result = ' '.join(result)
+            results.append(result)
+        
+            print("Saving results to file...")
+            total_result = total_result.join(results)
+            with open(path_out + p, "a") as f:
+                f.write(total_result)
+
+            #Reset data structures
+            chunk_size = 0
+            chunk_text = ""
+
+            chunk_text += line
+            chunk_size += sentence_size
+
+        line_index += 1
+
+    print("End of file reached")
+    exit()
+
+
+    """
     with open(path_in + p) as f:
         text = f.read()
     print("Opened file successfully")
@@ -158,8 +244,8 @@ for p in paths:
     chunkIndex = 1
     # After how many chunks should files be written to the save file
     saveFrequency = 5
-    for chunk in chunks:
-        print("Generating result for chunk ", chunkIndex, " of ", len(chunks))
+
+        Vprint("Generating result for chunk ", chunkIndex, " of ", len(chunks))
         chunkIndex += 1
 
         result = get_coref_prediction(coref_predictor, chunk)
@@ -194,3 +280,4 @@ for p in paths:
                 f.write(total_result)
 
     print("\n")
+    """
